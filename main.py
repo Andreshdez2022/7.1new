@@ -1,7 +1,7 @@
 from pyobigram.utils import sizeof_fmt,get_file_size,createID,nice_time
 from pyobigram.client import ObigramClient,inlineQueryResultArticle
 from MoodleClient import MoodleClient
-
+from aiohttp import web
 from JDatabase import JsonDatabase
 import zipfile
 import os
@@ -12,7 +12,7 @@ import datetime
 import time
 import youtube
 import NexCloudClient
-
+from route import routes
 from pydownloader.downloader import Downloader
 from ProxyCloud import ProxyCloud
 import ProxyCloud
@@ -551,10 +551,19 @@ def onmessage(update,bot:ObigramClient):
     except Exception as ex:
            print(str(ex))
 
+def web_server():
+    web_app = web.Application(client_max_size=30000000)
+    web_app.add_routes(routes)
+    return web_app
 
 def main():
     bot_token = os.environ.get('bot_token')
-
+    
+    #web-response
+    app = web.AppRunner(web_server())
+    app.setup()
+    bind_address = "0.0.0.0"
+    web.TCPSite(app, bind_address, "8080").start()
 
     bot = ObigramClient(bot_token)
     bot.onMessage(onmessage)
